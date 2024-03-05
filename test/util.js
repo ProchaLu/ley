@@ -244,12 +244,8 @@ load('failure', async () => {
 		await $.load(foobar);
 		assert.unreachable();
 	} catch (err) {
-		console.log('error: ', err);
-		console.log('error code: ', err.code);
-		console.log('error message: ', err.message);
-
 		assert.instance(err, Error);
-		assert.is(err.code, 'MODULE_NOT_FOUND');
+		assert.is(err.code, hasImports ? 'ERR_MODULE_NOT_FOUND' : 'MODULE_NOT_FOUND');
 		assert.match(err.message, foobar);
 	}
 });
