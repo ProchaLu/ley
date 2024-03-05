@@ -12,10 +12,10 @@ const hasImports = semiver(version, '12.0.0') > 0;
 // ---
 
 const glob = suite('$.glob', {
-	dir: join(fixtures, 'pg', 'migrations')
+	dir: join(fixtures, 'pg', 'migrations'),
 });
 
-glob('usage', async ctx => {
+glob('usage', async (ctx) => {
 	const out = await $.glob(ctx.dir);
 	assert.ok(Array.isArray(out), 'returns Promise<Array>');
 	assert.is(out.length, 6, '~> has 6 items');
@@ -26,12 +26,12 @@ glob('usage', async ctx => {
 	assert.type(first.abs, 'string', '~> has "abs" string');
 	assert.ok(isAbsolute(first.abs), '~~> is absolute path');
 
-	const names = out.map(x => x.name);
+	const names = out.map((x) => x.name);
 	const expects = ['001.js', '002.js', '003.js', '004.js', '005.js', '006.js'];
 	assert.equal(names, expects, '~> file order is expected');
 });
 
-glob('throws', async ctx => {
+glob('throws', async (ctx) => {
 	let caught = false;
 
 	try {
@@ -54,21 +54,24 @@ glob.run();
 const diff = suite('$.diff');
 
 diff('usage', () => {
-	const exists = ['001', '002', '003'].map(name => ({ name }));
-	const locals = ['001', '002', '003', '004', '005'].map(name => ({ name }));
+	const exists = ['001', '002', '003'].map((name) => ({ name }));
+	const locals = ['001', '002', '003', '004', '005'].map((name) => ({ name }));
 
 	const output = $.diff(exists, locals);
 	assert.ok(Array.isArray(output), 'returns an Array');
-	assert.ok(output.every(x => locals.includes(x)), '~> only returns items from `locals` list');
+	assert.ok(
+		output.every((x) => locals.includes(x)),
+		'~> only returns items from `locals` list',
+	);
 	assert.is(output.length, 2, '~> has 2 NEW items');
 
-	const names = output.map(x => x.name);
+	const names = output.map((x) => x.name);
 	assert.equal(names, ['004', '005']);
 });
 
 diff('identical', () => {
-	const exists = ['001', '002', '003'].map(name => ({ name }));
-	const locals = ['001', '002', '003'].map(name => ({ name }));
+	const exists = ['001', '002', '003'].map((name) => ({ name }));
+	const locals = ['001', '002', '003'].map((name) => ({ name }));
 
 	const output = $.diff(exists, locals);
 	assert.ok(Array.isArray(output), 'returns an Array');
@@ -79,8 +82,8 @@ diff('throws sequence error', () => {
 	let caught = false;
 
 	try {
-		const exists = ['001', '003'].map(name => ({ name }));
-		const locals = ['001', '002', '003'].map(name => ({ name }));
+		const exists = ['001', '003'].map((name) => ({ name }));
+		const locals = ['001', '002', '003'].map((name) => ({ name }));
 
 		$.diff(exists, locals);
 		assert.unreachable('SHOULD NOT REACH');
@@ -105,30 +108,36 @@ pluck('(utils) pluck', () => {
 	// should return everything, in sync
 	const foobar = ['003', '002', '001'];
 
-	const exists = foobar.map(name => ({ name }));
-	const locals = foobar.map(name => ({ name }));
+	const exists = foobar.map((name) => ({ name }));
+	const locals = foobar.map((name) => ({ name }));
 
 	const output = $.pluck(exists, locals);
 	assert.ok(Array.isArray(output), 'returns an Array');
-	assert.ok(output.every(x => locals.includes(x)), '~> only returns items from `locals` list');
+	assert.ok(
+		output.every((x) => locals.includes(x)),
+		'~> only returns items from `locals` list',
+	);
 	assert.is(output.length, 3, '~> has 3 candidates');
 
-	const names = output.map(x => x.name);
+	const names = output.map((x) => x.name);
 	assert.equal(names, foobar);
 });
 
 // Note: Arrays are received in reverse
 pluck('locals >> exists', () => {
 	// should NOT return items that don't exist yet
-	const exists = ['003', '002', '001'].map(name => ({ name }));
-	const locals = ['005', '004', '003', '002', '001'].map(name => ({ name }));
+	const exists = ['003', '002', '001'].map((name) => ({ name }));
+	const locals = ['005', '004', '003', '002', '001'].map((name) => ({ name }));
 
 	const output = $.pluck(exists, locals);
 	assert.ok(Array.isArray(output), 'returns an Array');
-	assert.ok(output.every(x => locals.includes(x)), '~> only returns items from `locals` list');
+	assert.ok(
+		output.every((x) => locals.includes(x)),
+		'~> only returns items from `locals` list',
+	);
 	assert.is(output.length, 3, '~> has 3 candidates');
 
-	const names = output.map(x => x.name);
+	const names = output.map((x) => x.name);
 	assert.equal(names, ['003', '002', '001']);
 });
 
@@ -138,8 +147,10 @@ pluck('exists >> locals :: throws', () => {
 
 	try {
 		// throws error because we don't have 005 definitions
-		const exists = ['005', '004', '003', '002', '001'].map(name => ({ name }));
-		const locals = ['003', '002', '001'].map(name => ({ name }));
+		const exists = ['005', '004', '003', '002', '001'].map((name) => ({
+			name,
+		}));
+		const locals = ['003', '002', '001'].map((name) => ({ name }));
 
 		$.pluck(exists, locals);
 		assert.unreachable('SHOULD NOT REACH');
@@ -162,19 +173,19 @@ const exists = suite('$.exists');
 exists('success', () => {
 	const output = $.exists('uvu');
 	assert.type(output, 'string', 'returns string (success)');
-	assert.is(output, require.resolve('uvu'))
+	assert.is(output, require.resolve('uvu'));
 });
 
 exists('failure', () => {
 	const output = $.exists('foobar');
 	assert.type(output, 'boolean', 'returns boolean (fail)');
-	assert.is(output, false)
+	assert.is(output, false);
 });
 
 exists('failure :: relative', () => {
 	const output = $.exists('./foobar');
 	assert.type(output, 'boolean', 'returns boolean (fail)');
-	assert.is(output, false)
+	assert.is(output, false);
 });
 
 exists.run();
@@ -190,16 +201,16 @@ detect('usage', () => {
 	const prev = $.exists;
 
 	// @ts-ignore
-	$.exists = x => {
+	$.exists = (x) => {
 		seen.push(x);
-	}
+	};
 
 	const foo = $.detect();
 	assert.is(foo, undefined, 'returns undefined (failure)');
 	assert.equal(seen, ORDER, '~> looks for drivers (ordered)');
 
 	// @ts-ignore
-	$.exists = x => x === 'pg';
+	$.exists = (x) => x === 'pg';
 	const bar = $.detect();
 	assert.is(bar, 'pg', '~> found "pg" (mock)');
 
@@ -217,13 +228,13 @@ load('success', async () => {
 	const output = await $.load(input);
 	assert.type(output, 'object', '~> returns _something_ if exists');
 	assert.type(output.down, 'function', '~> had "down" export');
-	assert.type(output.up, 'function', '~> had "up" export')
+	assert.type(output.up, 'function', '~> had "up" export');
 });
 
 load('success w/ cwd', async () => {
 	const input = resolve(__dirname, 'util.js'); // this file
 	const output = await $.load(input);
-	assert.type(output, 'object', '~> returns _something_ if exists')
+	assert.type(output, 'object', '~> returns _something_ if exists');
 });
 
 load('failure', async () => {
@@ -233,6 +244,10 @@ load('failure', async () => {
 		await $.load(foobar);
 		assert.unreachable();
 	} catch (err) {
+		console.log('error: ', err);
+		console.log('error code: ', err.code);
+		console.log('error message: ', err.message);
+
 		assert.instance(err, Error);
 		assert.is(err.code, 'MODULE_NOT_FOUND');
 		assert.match(err.message, foobar);
@@ -298,14 +313,33 @@ MigrationError('MigrationError', () => {
 	assert.instance(error, Error, '~> still inherits Error class');
 
 	assert.ok(error.stack.length > 0, 'has "stack" trace');
-	assert.ok(error.stack.length > original.stack.length, '~> is longer than original trace');
+	assert.ok(
+		error.stack.length > original.stack.length,
+		'~> is longer than original trace',
+	);
 	assert.ok(error.stack.includes(original.stack), '~> contains original trace');
 
-	assert.is(error.code, original.code, 'inherits original "code" property (custom)');
-	assert.is(error.foobar, original.foobar, 'inherits original "foobar" property (custom)');
-	assert.is(error.position, original.position, 'inherits original "position" property (custom)');
+	assert.is(
+		error.code,
+		original.code,
+		'inherits original "code" property (custom)',
+	);
+	assert.is(
+		error.foobar,
+		original.foobar,
+		'inherits original "foobar" property (custom)',
+	);
+	assert.is(
+		error.position,
+		original.position,
+		'inherits original "position" property (custom)',
+	);
 
-	assert.equal(error.migration, migration, 'attaches custom "migration" key w/ file data');
+	assert.equal(
+		error.migration,
+		migration,
+		'attaches custom "migration" key w/ file data',
+	);
 });
 
 MigrationError.run();
@@ -315,14 +349,11 @@ MigrationError.run();
 const isDriver = suite('$.isDriver');
 
 isDriver('connect', () => {
-	assert.throws(
-		() => $.isDriver({}),
-		'Driver must have "connect" function'
-	);
+	assert.throws(() => $.isDriver({}), 'Driver must have "connect" function');
 
 	assert.throws(
 		() => $.isDriver({ connect: 123 }),
-		'Driver must have "connect" function'
+		'Driver must have "connect" function',
 	);
 });
 
@@ -331,12 +362,12 @@ isDriver('setup', () => {
 
 	assert.throws(
 		() => $.isDriver({ connect: noop }),
-		'Driver must have "setup" function'
+		'Driver must have "setup" function',
 	);
 
 	assert.throws(
 		() => $.isDriver({ connect: noop, setup: 123 }),
-		'Driver must have "setup" function'
+		'Driver must have "setup" function',
 	);
 });
 
@@ -345,12 +376,12 @@ isDriver('loop', () => {
 
 	assert.throws(
 		() => $.isDriver({ connect: noop, setup: noop }),
-		'Driver must have "loop" function'
+		'Driver must have "loop" function',
 	);
 
 	assert.throws(
 		() => $.isDriver({ connect: noop, setup: noop, loop: 123 }),
-		'Driver must have "loop" function'
+		'Driver must have "loop" function',
 	);
 });
 
@@ -359,12 +390,12 @@ isDriver('end', () => {
 
 	assert.throws(
 		() => $.isDriver({ connect: noop, setup: noop, loop: noop }),
-		'Driver must have "end" function'
+		'Driver must have "end" function',
 	);
 
 	assert.throws(
 		() => $.isDriver({ connect: noop, setup: noop, loop: noop, end: 123 }),
-		'Driver must have "end" function'
+		'Driver must have "end" function',
 	);
 });
 
